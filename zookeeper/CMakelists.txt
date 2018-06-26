@@ -1,0 +1,41 @@
+project( demo)
+cmake_minimum_required( VERSION 3.0)
+set(CMAKE_DEBUG_POSTFIX "_d")
+set(DEBUG_POSTFIX "_debug")
+set(RELEASE_POSTFIX "_release")
+aux_source_directory( ./src srclist)
+ 
+list(REMOVE_ITEM srclist  ./src/clientmain.cpp ./src/servermain.cpp)
+ 
+#source_group( demo_ALL_HEADERS  FILES include/zkclient.h include/zkregistry.h)
+
+file(GLOB_RECURSE demo_ALL_HEADERS ${CMAKE_SOURCE_DIR}/include/*.h ${CMAKE_SOURCE_DIR}/include/*.hpp)
+
+
+add_definitions(-DUSE_STATIC_LIB)
+ 
+set(targetname "zkserverdemo")
+set(targetclient "zkclientdemo")
+
+link_directories(./build/debug/ ./build/release)
+add_executable( ${targetname} ${srclist}  ./src/servermain.cpp ${demo_ALL_HEADERS}  )
+add_executable( ${targetclient} src/zkclient.cpp src/clientmain.cpp src/clientconfig.cpp src/zookeeper.cpp 
+src/zookeeper_error.cpp src/zookeeper_ext.cpp src/zkclientmgr.cpp src/zkclientwatcher.cpp
+${demo_ALL_HEADERS})
+
+
+target_link_libraries(${targetclient} ws2_32
+debug  hashtabled optimized hashtable
+debug zookeeperd  optimized zookeeper) 
+
+target_link_libraries(${targetname} ws2_32
+debug  hashtabled optimized hashtable
+debug zookeeperd  optimized zookeeper) 
+
+
+target_include_directories(${targetname} PRIVATE ./zookeeper/c/include/ ./include)
+target_include_directories(${targetclient} PRIVATE ./zookeeper/c/include/ ./include)
+
+
+install( TARGETS ${targetname}  DESTINATION  ${CMAKE_CURRNET_SOURCE_DIR}/bin)
+install( TARGETS ${targetclient} DESTINATION ${CMAKE_CURRNET_SOURCE_DIR}/bin)
